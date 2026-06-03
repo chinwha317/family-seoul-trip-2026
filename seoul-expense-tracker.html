@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>首爾旅遊花費記錄</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#f3f4f6}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Helvetica Neue",sans-serif;color:#111;-webkit-text-size-adjust:100%;font-size:16px}
+input,select,button{font-family:inherit;font-size:16px}
+input[type=number]{-moz-appearance:textfield}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+button{-webkit-tap-highlight-color:transparent;cursor:pointer}
+.wrap{max-width:520px;margin:0 auto;padding:12px 14px 100px}
+.card{background:#fff;border-radius:16px;padding:18px;box-shadow:0 1px 6px rgba(0,0,0,0.08);margin-bottom:12px}
+.inp{display:block;width:100%;font-size:16px;padding:11px 12px;border:1px solid #ddd;border-radius:10px;background:#fff;color:#111;-webkit-appearance:none;appearance:none;outline:none}
+.inp:focus{border-color:#3266ad}
+.field{margin-bottom:12px}
+.field-lbl{font-size:13px;color:#888;display:block;margin-bottom:5px}
+.btn-blue{display:block;width:100%;padding:14px;background:#3266ad;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700}
+.btn-outline{padding:14px 18px;background:#fff;border:1px solid #ddd;border-radius:12px;font-size:15px;color:#555}
+.tab-bar{background:#fff;border-radius:14px;display:flex;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:12px}
+.tab-btn{flex:1;padding:10px 2px;font-size:11px;background:none;border:none;border-bottom:2.5px solid transparent;color:#999;display:flex;flex-direction:column;align-items:center;gap:3px}
+.tab-btn.on{color:#3266ad;border-bottom-color:#3266ad;font-weight:700}
+.tab-icon{font-size:20px;line-height:1}
+.sum-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.sum-total{grid-column:1/-1;background:#3266ad;border-radius:14px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.sum-day{background:#fff;border-radius:12px;padding:9px 10px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.twd-box{background:#eff6ff;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.filter-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.fbtn{font-size:12px;padding:5px 14px;border-radius:20px;border:1px solid #ddd;background:none;color:#666}
+.fbtn.on{background:#3266ad;color:#fff;border-color:#3266ad;font-weight:700}
+.exp-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:0.5px solid #f0f0f0}
+.dbadge{background:#eff6ff;border-radius:8px;padding:4px 9px;font-size:12px;font-weight:700;color:#3266ad;white-space:nowrap;flex-shrink:0}
+.exp-info{flex:1;min-width:0}
+.exp-item{font-size:14px;color:#222;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.exp-krw{font-size:12px;color:#bbb;margin-top:2px}
+.exp-twd{font-size:15px;font-weight:700;color:#3266ad;white-space:nowrap}
+.del{background:none;border:none;font-size:22px;color:#ddd;padding:4px 6px;line-height:1;flex-shrink:0}
+.subtotal{display:flex;justify-content:space-between;padding-top:14px;border-top:1px solid #f0f0f0;margin-top:4px}
+.smsg{font-size:13px;padding:9px 12px;border-radius:8px;margin-top:10px}
+.smsg-ok{background:#d1fae5;color:#065f46}
+.smsg-err{background:#fee2e2;color:#991b1b}
+.smsg-warn{background:#fef3c7;color:#92400e}
+.smsg-info{background:#dbeafe;color:#1e40af}
+.upload-zone{border:2px dashed #ddd;border-radius:14px;padding:40px 16px;text-align:center;background:#fafafa}
+.confirm-box{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.empty{text-align:center;padding:36px 0;color:#ccc;font-size:15px}
+.save-note{font-size:11px;margin-top:4px;display:flex;align-items:center;gap:4px}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.bar-lbl{font-size:12px;color:#888;width:52px;text-align:right;flex-shrink:0}
+.bar-track{flex:1;background:#f0f0f0;border-radius:6px;height:28px;position:relative;overflow:hidden}
+.bar-fill{height:100%;background:#3266ad;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;min-width:4px;transition:width .4s}
+.bar-fill-lbl{font-size:11px;color:#fff;font-weight:700;white-space:nowrap}
+.bar-out{font-size:11px;color:#3266ad;font-weight:700;white-space:nowrap;margin-left:4px;min-width:60px}
+.cum-row{margin-left:60px;margin-bottom:12px;margin-top:-4px;font-size:12px;color:#f59e0b;font-weight:600;display:flex;align-items:center;gap:5px}
+.mini-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:14px}
+.mini-cell{text-align:center;padding:7px 4px;background:#f8f9fa;border-radius:10px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+// ── 常數 ──────────────────────────────────────────────
+var DAYS = ["7/3","7/4","7/5","7/6","7/7"];
+var DLABELS = {"7/3":"7/3 (五)","7/4":"7/4 (六)","7/5":"7/5 (日)","7/6":"7/6 (一)","7/7":"7/7 (二)"};
+
+// ── LocalStorage ──────────────────────────────────────
+var LS_EXP  = "s2026_exp";
+var LS_RATE = "s2026_rate";
+function lsGet(k,fb){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):fb;}catch(e){return fb;}}
+function lsSave(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+// ── 狀態 ──────────────────────────────────────────────
+var S = {
+  tab:"manual",
+  rate: lsGet(LS_RATE, 24.5),
+  rateStr: String(lsGet(LS_RATE, 24.5)),
+  exps: lsGet(LS_EXP, []),
+  fday:"all",
+  mDate:"7/3", mItem:"", mKrw:"", mMsg:null,
+  sStage:"idle", sImg:null, sDate:"7/3", sItem:"", sKrw:"", sMsg:"", sAddMsg:null,
+  showDel:false,
+  flash:false
+};
+
+// ── 工具 ──────────────────────────────────────────────
+function fKrw(v){return"₩"+Math.round(v).toLocaleString();}
+function fTwd(v){return"NT$"+Math.round(v).toLocaleString();}
+function k2t(krw){return Math.round(krw * S.rate / 1000);}
+function dayTotals(){
+  return DAYS.map(function(d){
+    var ex=S.exps.filter(function(e){return e.date===d;});
+    return{krw:ex.reduce(function(s,e){return s+e.krw;},0),
+           twd:ex.reduce(function(s,e){return s+e.twd;},0)};
+  });
+}
+
+var _msgT={};
+function setMsg(k,msg,type,ms){
+  S[k]={msg:msg,type:type};
+  render();
+  if(_msgT[k])clearTimeout(_msgT[k]);
+  _msgT[k]=setTimeout(function(){S[k]=null;render();},ms||2400);
+}
+
+var _flashT=null;
+function persist(){
+  lsSave(LS_EXP, S.exps);
+  lsSave(LS_RATE, S.rate);
+  S.flash=true;
+  render();
+  if(_flashT)clearTimeout(_flashT);
+  _flashT=setTimeout(function(){S.flash=false;render();},1200);
+}
+
+// ── 操作 ──────────────────────────────────────────────
+function addManual(){
+  var item=S.mItem.trim();
+  if(!item){setMsg("mMsg","請輸入消費品項","err");return;}
+  var krw=parseFloat(S.mKrw);
+  if(!krw||krw<=0){setMsg("mMsg","請輸入有效金額","err");return;}
+  S.exps.push({id:Date.now(),date:S.mDate,item:item,krw:krw,twd:k2t(krw),src:"m"});
+  S.mItem=""; S.mKrw="";
+  persist();
+  setMsg("mMsg","✓ 已新增並儲存："+item,"ok");
+}
+function addScan(){
+  var item=S.sItem.trim();
+  if(!item){setMsg("sAddMsg","請確認品項名稱","err");return;}
+  var krw=parseFloat(S.sKrw);
+  if(!krw||krw<=0){setMsg("sAddMsg","請確認金額","err");return;}
+  S.exps.push({id:Date.now(),date:S.sDate,item:item,krw:krw,twd:k2t(krw),src:"s"});
+  persist();
+  setMsg("sAddMsg","✓ 已新增並儲存","ok");
+  setTimeout(function(){S.sStage="idle";S.sImg=null;render();},1500);
+}
+function delExp(id){
+  S.exps=S.exps.filter(function(e){return e.id!==id;});
+  persist();
+}
+function clearAll(){
+  S.exps=[]; S.showDel=false;
+  persist();
+  setMsg("mMsg","已清除所有資料","warn");
+}
+function applyRate(){
+  var v=parseFloat(S.rateStr);
+  if(!isNaN(v)&&v>0){
+    S.rate=v;
+    S.exps=S.exps.map(function(e){return Object.assign({},e,{twd:Math.round(e.krw*v/1000)});});
+    persist();
+  }
+}
+
+// ── 掃描 ──────────────────────────────────────────────
+function doScan(file){
+  if(!file||!file.type.startsWith("image/"))return;
+  var rd=new FileReader();
+  rd.onload=function(ev){
+    var url=ev.target.result;
+    var b64=url.split(",")[1];
+    var mime=file.type||"image/jpeg";
+    S.sImg=url; S.sStage="loading"; S.sMsg="AI 辨識中，請稍候...";
+    render();
+    fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,
+        messages:[{role:"user",content:[
+          {type:"image",source:{type:"base64",media_type:mime,data:b64}},
+          {type:"text",text:'請辨識這張收據照片，只回傳JSON不加任何說明：{"date":"月/日格式如7/4，無法辨識填空","item":"消費品項或店名50字內","krw":韓元金額數字}'}
+        ]}]})
+    }).then(function(r){return r.json();}).then(function(d){
+      var raw=((d.content&&d.content[0]&&d.content[0].text)||"").trim().replace(/```json|```/g,"").trim();
+      var res={date:"",item:"",krw:0};
+      try{res=JSON.parse(raw);}catch(_){}
+      var ok=["7/3","7/4","7/5","7/6","7/7"];
+      S.sDate=ok.indexOf(res.date)>=0?res.date:"7/3";
+      S.sItem=res.item||""; S.sKrw=String(res.krw||"");
+      S.sStage="result"; S.sMsg="辨識完成，請確認後新增";
+      render();
+    }).catch(function(){
+      S.sStage="error"; S.sMsg="辨識失敗，請手動填寫";
+      S.sDate="7/3"; S.sItem=""; S.sKrw="";
+      render();
+    });
+  };
+  rd.readAsDataURL(file);
+}
+
+// ── DOM 建構工具 ───────────────────────────────────────
+function h(tag,cls,style){
+  var e=document.createElement(tag);
+  if(cls)e.className=cls;
+  if(style)Object.assign(e.style,style);
+  return e;
+}
+function t(s){return document.createTextNode(String(s));}
+function app(parent,child){if(child!=null&&child!==false)parent.appendChild(typeof child==="string"?t(child):child);}
+function inp(type,val,ph,cb,extra){
+  var i=h("input");i.type=type;i.className="inp";
+  i.value=val||""; if(ph)i.placeholder=ph;
+  if(extra)Object.assign(i,extra);
+  i.oninput=function(){cb(i.value);};
+  return i;
+}
+function sel(val,opts,cb){
+  var s=h("select");s.className="inp";
+  opts.forEach(function(o){
+    var op=document.createElement("option");
+    op.value=o.v;op.textContent=o.l;
+    if(o.v===val)op.selected=true;
+    s.appendChild(op);
+  });
+  s.onchange=function(){cb(s.value);};
+  return s;
+}
+function fld(lbl,inputEl){
+  var f=h("div","field");
+  var l=h("label","field-lbl");l.textContent=lbl;
+  app(f,l);app(f,inputEl);return f;
+}
+function msgEl(m){
+  if(!m)return null;
+  var d=h("div","smsg smsg-"+m.type);d.textContent=m.msg;return d;
+}
+function twdPrev(krwStr){
+  var n=parseFloat(krwStr);
+  if(!n||n<=0)return null;
+  var d=h("div","twd-box");
+  var s=h("span");s.style.fontSize="13px";s.style.color="#666";s.textContent="換算台幣";
+  var v=h("span");v.style.cssText="font-size:17px;font-weight:700;color:#3266ad";v.textContent=fTwd(k2t(n));
+  app(d,s);app(d,v);return d;
+}
+function dayOpts(){return DAYS.map(function(d){return{v:d,l:DLABELS[d]};});}
+
+// ── 各頁面 render ─────────────────────────────────────
+
+function buildHeader(dt){
+  var total=dt.reduce(function(s,d){return{krw:s.krw+d.krw,twd:s.twd+d.twd};},{krw:0,twd:0});
+  var c=h("div","card");
+  var top=h("div");top.style.cssText="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px";
+
+  var L=h("div");
+  var ti=h("div");ti.style.cssText="font-size:18px;font-weight:700;color:#1a1a2e";ti.textContent="🇰🇷 首爾旅遊花費記錄";
+  var su=h("div");su.style.cssText="font-size:12px;color:#888;margin-top:3px";su.textContent="2026年 7/3（五）～ 7/7（二）";
+  var sv=h("div","save-note");
+  sv.style.color=S.flash?"#059669":"#bbb";
+  sv.textContent=(S.flash?"💾 正在儲存...":"✅ 資料已儲存（共"+S.exps.length+"筆）");
+  app(L,ti);app(L,su);app(L,sv);
+
+  var R=h("div");R.style.cssText="display:flex;align-items:center;gap:6px";
+  var rL=h("span");rL.style.cssText="font-size:12px;color:#888";rL.textContent="₩1000 =";
+  var rI=document.createElement("input");
+  rI.type="number";rI.value=S.rateStr;
+  rI.style.cssText="width:64px;font-size:14px;padding:5px 8px;border:1px solid #ddd;border-radius:8px;text-align:center;outline:none;-webkit-appearance:none";
+  rI.oninput=function(){S.rateStr=rI.value;};
+  rI.onblur=applyRate;
+  rI.onkeydown=function(e){if(e.key==="Enter"){applyRate();rI.blur();}};
+  var rR=h("span");rR.style.cssText="font-size:12px;color:#888";rR.textContent="TWD";
+  app(R,rL);app(R,rI);app(R,rR);
+
+  app(top,L);app(top,R);app(c,top);
+  return c;
+}
+
+function buildSummary(dt){
+  var total=dt.reduce(function(s,d){return{krw:s.krw+d.krw,twd:s.twd+d.twd};},{krw:0,twd:0});
+  var g=h("div","sum-grid");
+
+  var tc=h("div","sum-total");
+  var tL=h("div");
+  var tLa=h("div");tLa.style.cssText="font-size:11px;color:rgba(255,255,255,0.7);margin-bottom:3px";tLa.textContent="總花費";
+  var tLb=h("div");tLb.style.cssText="font-size:22px;font-weight:700;color:#fff";tLb.textContent=fTwd(total.twd);
+  app(tL,tLa);app(tL,tLb);
+  var tR=h("div");tR.style.textAlign="right";
+  var tRa=h("div");tRa.style.cssText="font-size:11px;color:rgba(255,255,255,0.7);margin-bottom:3px";tRa.textContent="韓元";
+  var tRb=h("div");tRb.style.cssText="font-size:14px;color:rgba(255,255,255,0.9)";tRb.textContent=fKrw(total.krw);
+  app(tR,tRa);app(tR,tRb);
+  app(tc,tL);app(tc,tR);g.appendChild(tc);
+
+  DAYS.forEach(function(d,i){
+    var dc=h("div","sum-day");
+    var da=h("div");da.style.cssText="font-size:11px;color:#888;margin-bottom:3px";da.textContent=DLABELS[d];
+    var db=h("div");db.style.cssText="font-size:13px;font-weight:700;color:"+(dt[i].twd>0?"#3266ad":"#ccc");db.textContent=fTwd(dt[i].twd);
+    var dc2=h("div");dc2.style.cssText="font-size:10px;color:#bbb;margin-top:2px";dc2.textContent=fKrw(dt[i].krw);
+    app(dc,da);app(dc,db);app(dc,dc2);g.appendChild(dc);
+  });
+  return g;
+}
+
+function buildTabs(){
+  var tabs=[{id:"manual",ic:"✏️",lb:"手動輸入"},{id:"scan",ic:"📷",lb:"掃描收據"},{id:"records",ic:"📋",lb:"明細"},{id:"chart",ic:"📊",lb:"圖表"}];
+  var bar=h("div","tab-bar");
+  tabs.forEach(function(tb){
+    var b=h("button","tab-btn"+(S.tab===tb.id?" on":""));
+    var ic=h("span","tab-icon");ic.textContent=tb.ic;
+    app(b,ic);app(b,tb.lb);
+    b.onclick=function(){S.tab=tb.id;render();};
+    bar.appendChild(b);
+  });
+  return bar;
+}
+
+function buildManual(){
+  var c=h("div","card");
+  var ti=h("div");ti.style.cssText="font-size:15px;font-weight:700;margin-bottom:16px;color:#222";ti.textContent="新增消費紀錄";
+  app(c,ti);
+  app(c,fld("消費日期",sel(S.mDate,dayOpts(),function(v){S.mDate=v;})));
+  app(c,fld("消費品項",inp("text",S.mItem,"例：明洞炸雞、地鐵票...",function(v){S.mItem=v;})));
+  app(c,fld("金額（韓元 KRW）",inp("number",S.mKrw,"0",function(v){S.mKrw=v;render();},{inputMode:"numeric"})));
+  app(c,twdPrev(S.mKrw));
+  var btn=h("button","btn-blue");btn.textContent="＋ 新增";btn.onclick=addManual;
+  app(c,btn);
+  app(c,msgEl(S.mMsg));
+  return c;
+}
+
+function buildScan(){
+  var c=h("div","card");
+  var ti=h("div");ti.style.cssText="font-size:15px;font-weight:700;margin-bottom:16px;color:#222";ti.textContent="掃描收據 / 消費明細";
+  app(c,ti);
+
+  if(S.sStage==="idle"){
+    var uz=h("div","upload-zone");
+    uz.style.cursor="pointer";
+    var uic=h("div");uic.style.cssText="font-size:48px;margin-bottom:10px";uic.textContent="📷";
+    var ut1=h("div");ut1.style.cssText="font-size:15px;font-weight:600;color:#555;margin-bottom:6px";ut1.textContent="點擊上傳收據照片";
+    var ut2=h("div");ut2.style.cssText="font-size:13px;color:#aaa";ut2.textContent="支援 JPG、PNG、HEIC 格式";
+    var ut3=h("div");ut3.style.cssText="font-size:12px;color:#bbb;margin-top:6px";ut3.textContent="AI 自動辨識消費品項與金額";
+    app(uz,uic);app(uz,ut1);app(uz,ut2);app(uz,ut3);
+    uz.onclick=function(){document.getElementById("fi").click();};
+    app(c,uz);
+  } else {
+    if(S.sImg){
+      var img=document.createElement("img");img.src=S.sImg;img.alt="收據預覽";
+      img.style.cssText="width:100%;max-height:220px;object-fit:contain;border-radius:12px;margin-bottom:12px;border:1px solid #eee;display:block";
+      app(c,img);
+    }
+    var mt=S.sStage==="loading"?"info":S.sStage==="result"?"ok":"err";
+    var mpfx=S.sStage==="loading"?"⏳ ":S.sStage==="result"?"✅ ":"⚠️ ";
+    var md=msgEl({msg:mpfx+S.sMsg,type:mt});md.style.marginTop="0";md.style.marginBottom="14px";
+    app(c,md);
+    if(S.sStage==="result"||S.sStage==="error"){
+      app(c,fld("消費日期",sel(S.sDate,dayOpts(),function(v){S.sDate=v;})));
+      app(c,fld("消費品項",inp("text",S.sItem,"",function(v){S.sItem=v;})));
+      app(c,fld("金額（KRW）",inp("number",S.sKrw,"",function(v){S.sKrw=v;render();},{inputMode:"numeric"})));
+      app(c,twdPrev(S.sKrw));
+      var brow=h("div");brow.style.cssText="display:flex;gap:10px";
+      var ok=h("button","btn-blue");ok.style.flex="1";ok.style.padding="14px";ok.textContent="確認新增";ok.onclick=addScan;
+      var rs=h("button","btn-outline");rs.textContent="重新掃描";
+      rs.onclick=function(){S.sStage="idle";S.sImg=null;render();};
+      app(brow,ok);app(brow,rs);app(c,brow);
+      app(c,msgEl(S.sAddMsg));
+    }
+  }
+  // hidden file input
+  var fi=document.createElement("input");fi.type="file";fi.id="fi";fi.accept="image/*";fi.style.display="none";
+  fi.onchange=function(e){var f=e.target.files[0];fi.value="";if(f)doScan(f);};
+  app(c,fi);
+  return c;
+}
+
+function buildRecords(){
+  var filtered=S.fday==="all"?S.exps:S.exps.filter(function(e){return e.date===S.fday;});
+  var c=h("div","card");
+
+  var hrow=h("div");hrow.style.cssText="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px";
+  var ht=h("div");ht.style.cssText="font-size:15px;font-weight:700;color:#222";ht.textContent="消費明細";
+  app(hrow,ht);
+  if(S.exps.length>0){
+    var cb=h("button");cb.style.cssText="font-size:12px;padding:5px 12px;border-radius:8px;border:1px solid #fca5a5;background:none;color:#ef4444";
+    cb.textContent="清除全部";cb.onclick=function(){S.showDel=true;render();};
+    app(hrow,cb);
+  }
+  app(c,hrow);
+
+  if(S.showDel){
+    var cf=h("div","confirm-box");
+    var cft=h("div");cft.style.cssText="font-size:14px;color:#92400e;margin-bottom:12px;font-weight:600";cft.textContent="⚠️ 確定要清除所有消費記錄嗎？";
+    var cfd=h("div");cfd.style.cssText="font-size:13px;color:#b45309;margin-bottom:14px";cfd.textContent="此操作無法復原，"+S.exps.length+" 筆資料將全部刪除。";
+    var cfr=h("div");cfr.style.cssText="display:flex;gap:10px";
+    var yes=h("button","btn-blue");yes.style.background="#ef4444";yes.style.flex="1";yes.style.padding="10px";yes.textContent="確定清除";yes.onclick=clearAll;
+    var no=h("button","btn-outline");no.style.flex="1";no.style.padding="10px";no.textContent="取消";no.onclick=function(){S.showDel=false;render();};
+    app(cfr,yes);app(cfr,no);app(cf,cft);app(cf,cfd);app(cf,cfr);app(c,cf);
+  }
+
+  var fr=h("div","filter-row");
+  ["all"].concat(DAYS).forEach(function(d){
+    var fb=h("button","fbtn"+(S.fday===d?" on":""));
+    fb.textContent=d==="all"?"全部":d;
+    fb.onclick=function(){S.fday=d;render();};
+    fr.appendChild(fb);
+  });
+  app(c,fr);
+
+  if(filtered.length===0){
+    var em=h("div","empty");
+    var ei=h("div");ei.style.cssText="font-size:40px;margin-bottom:8px";ei.textContent="🧾";
+    app(em,ei);app(em,"尚無消費記錄");app(c,em);
+  } else {
+    var list=h("div");
+    filtered.slice().reverse().forEach(function(ex){
+      var row=h("div","exp-row");
+      var db=h("div","dbadge");db.textContent=ex.date;
+      var inf=h("div","exp-info");
+      var it=h("div","exp-item");it.textContent=ex.item;
+      if(ex.src==="s"){var sc=h("span");sc.style.cssText="font-size:11px;color:#bbb;margin-left:5px";sc.textContent="📷";app(it,sc);}
+      var kr=h("div","exp-krw");kr.textContent=fKrw(ex.krw);
+      app(inf,it);app(inf,kr);
+      var tv=h("div","exp-twd");tv.textContent=fTwd(ex.twd);
+      var dl=h("button","del");dl.textContent="×";
+      dl.onclick=(function(id){return function(){delExp(id);};})(ex.id);
+      app(row,db);app(row,inf);app(row,tv);app(row,dl);
+      list.appendChild(row);
+    });
+    app(c,list);
+    var sub=h("div","subtotal");
+    var sk=h("span");sk.style.cssText="font-size:13px;color:#888";sk.textContent="小計："+fKrw(filtered.reduce(function(s,e){return s+e.krw;},0));
+    var sv2=h("span");sv2.style.cssText="font-size:15px;font-weight:700;color:#3266ad";sv2.textContent=fTwd(filtered.reduce(function(s,e){return s+e.twd;},0));
+    app(sub,sk);app(sub,sv2);app(c,sub);
+  }
+  return c;
+}
+
+function buildChart(dt){
+  var c=h("div","card");
+  var ti=h("div");ti.style.cssText="font-size:15px;font-weight:700;margin-bottom:6px;color:#222";ti.textContent="每日消費（台幣）";
+  var leg=h("div");leg.style.cssText="display:flex;gap:16px;font-size:12px;color:#888;margin-bottom:14px";
+  var l1=h("span");l1.innerHTML='<span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#3266ad;margin-right:4px;vertical-align:1px"></span>當日花費';
+  var l2=h("span");l2.innerHTML='<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#f59e0b;margin-right:4px;vertical-align:1px"></span>累計花費';
+  app(leg,l1);app(leg,l2);app(c,ti);app(c,leg);
+
+  var maxT=Math.max.apply(null,dt.map(function(d){return d.twd;}));
+  if(maxT===0)maxT=1;
+  var cum=0;
+  DAYS.forEach(function(d,i){
+    cum+=dt[i].twd;
+    var pct=Math.round(dt[i].twd/maxT*100);
+
+    // bar
+    var row=h("div","bar-row");
+    var lbl=h("div","bar-lbl");lbl.textContent=d;
+    var track=h("div","bar-track");
+    var fill=h("div","bar-fill");fill.style.width=pct+"%";
+    var bOut=h("div","bar-out");bOut.textContent=dt[i].twd>0?fTwd(dt[i].twd):"";
+    if(dt[i].twd>0&&pct>30){
+      var bIn=h("div","bar-fill-lbl");bIn.textContent=fTwd(dt[i].twd);
+      bOut.textContent="";
+      fill.appendChild(bIn);
+    }
+    app(track,fill);app(row,lbl);app(row,track);app(row,bOut);app(c,row);
+
+    // cumulative indicator
+    var cr=h("div","cum-row");
+    var cd=h("span");cd.style.cssText="width:8px;height:8px;border-radius:50%;background:#f59e0b;display:inline-block;flex-shrink:0";
+    var cv=h("span");cv.textContent="累計 "+fTwd(cum);
+    app(cr,cd);app(cr,cv);app(c,cr);
+  });
+
+  // mini grid
+  var mg=h("div","mini-grid");
+  DAYS.forEach(function(d,i){
+    var mc=h("div","mini-cell");
+    var ml=h("div");ml.style.cssText="font-size:11px;color:#888;margin-bottom:3px";ml.textContent=d;
+    var mv=h("div");mv.style.cssText="font-size:12px;font-weight:700;color:"+(dt[i].twd>0?"#3266ad":"#ccc");
+    mv.textContent=dt[i].twd>0?(dt[i].twd>=1000?(dt[i].twd/1000).toFixed(1)+"k":dt[i].twd):"–";
+    app(mc,ml);app(mc,mv);mg.appendChild(mc);
+  });
+  app(c,mg);
+  return c;
+}
+
+// ── Main render ───────────────────────────────────────
+function render(){
+  var root=document.getElementById("app");
+  root.innerHTML="";
+  var dt=dayTotals();
+  root.appendChild(buildHeader(dt));
+  root.appendChild(buildSummary(dt));
+  root.appendChild(buildTabs());
+  if(S.tab==="manual")   root.appendChild(buildManual());
+  else if(S.tab==="scan")    root.appendChild(buildScan());
+  else if(S.tab==="records") root.appendChild(buildRecords());
+  else if(S.tab==="chart")   root.appendChild(buildChart(dt));
+}
+
+render();
+</script>
+</body>
+</html>
