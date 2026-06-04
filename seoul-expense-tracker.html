@@ -176,23 +176,38 @@ function persist(){
 // ── 匯率自動抓取 ──────────────────────────────────────
 function fetchRate(){
   S.rateLoading=true; render();
-  // Use frankfurter: get TWD per KRW via USD bridge
-  // TWD/USD and KRW/USD -> TWD per KRW = (TWD/USD) / (KRW/USD)
-  fetch("https://api.frankfurter.app/latest?from=KRW&to=TWD")
+  // ExchangeRate-API free endpoint (no key needed), USD as bridge
+  // USD->TWD and USD->KRW, then: TWD per 1000 KRW = (TWD/USD) / (KRW/USD) * 1000
+  fetch("https://open.er-api.com/v6/latest/USD")
   .then(function(r){return r.json();})
   .then(function(d){
-    if(d&&d.rates&&d.rates.TWD){
-      // result is TWD per 1 KRW, multiply by 1000 to get per 1000 KRW
-      var per1000=Math.round(d.rates.TWD*1000*100)/100;
+    if(d&&d.rates&&d.rates.TWD&&d.rates.KRW){
+      var twdPerKrw = d.rates.TWD / d.rates.KRW; // TWD per 1 KRW
+      var per1000 = Math.round(twdPerKrw * 1000 * 100) / 100; // TWD per 1000 KRW, 2 decimals
       S.rate=per1000; S.rateStr=String(per1000);
       S.exps=S.exps.map(function(e){return Object.assign({},e,{twd:Math.round(e.krw*per1000/1000)});});
       S.rateLoading=false;
       persist();
-      setMsg("rateMsg","✓ 已抓取今日匯率：₩1000 = NT$"+per1000,"ok");
+      setMsg("rateMsg","✓ 今日匯率已更新：₩1000 = NT$"+per1000,"ok");
     } else { throw new Error("no data"); }
   }).catch(function(){
-    S.rateLoading=false; render();
-    setMsg("rateMsg","抓取失敗，請手動輸入匯率","err");
+    // fallback: try exchangerate.host
+    fetch("https://api.exchangerate-api.com/v4/latest/USD")
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d&&d.rates&&d.rates.TWD&&d.rates.KRW){
+        var twdPerKrw = d.rates.TWD / d.rates.KRW;
+        var per1000 = Math.round(twdPerKrw * 1000 * 100) / 100;
+        S.rate=per1000; S.rateStr=String(per1000);
+        S.exps=S.exps.map(function(e){return Object.assign({},e,{twd:Math.round(e.krw*per1000/1000)});});
+        S.rateLoading=false;
+        persist();
+        setMsg("rateMsg","✓ 今日匯率已更新：₩1000 = NT$"+per1000,"ok");
+      } else { throw new Error("no data"); }
+    }).catch(function(){
+      S.rateLoading=false; render();
+      setMsg("rateMsg","抓取失敗，請手動輸入匯率","err");
+    });
   });
 }
 
